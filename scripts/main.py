@@ -1,5 +1,6 @@
 from black_scholes_model import calculate_option_price
 from greeks_calculator import calculate_greeks
+from implied_volatility import calculate_implied_volatility
 
 def main():
     S = 100  # Current stock price
@@ -26,6 +27,13 @@ def main():
     print("\nPut Option Greeks:")
     for greek, value in put_greeks.items():
         print(f"{greek}: {value:.4f}")
+
+    # Calculate implied volatility for call and put options
+    iv_call = calculate_implied_volatility(call_price, S, K, T, r, 'c')
+    iv_put = calculate_implied_volatility(put_price, S, K, T, r, 'p')
+
+    print(f"\nImplied Volatility (Call): {iv_call:.4f}")
+    print(f"Implied Volatility (Put): {iv_put:.4f}")
 
 if __name__ == "__main__":
     main()
