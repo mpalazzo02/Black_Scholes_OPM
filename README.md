@@ -5,13 +5,13 @@ This repository contains the code and resources for the Black-Scholes Option Pri
 
 Overview
 
-The project provides an interactive dashboard for calculating and visualizing the price of Call and Put options using the Black-Scholes model. The dashboard also allows users to explore the Greeks, which are sensitivities of the option's price to various factors.
+The project provides an interactive dashboard for calculating and visualising the price of Call and Put options using the Black-Scholes model. The dashboard also allows users to explore the Greeks, which are sensitivities of the option's price to various factors.
 
 Key Features
 Option Pricing: Calculate the fair value of Call and Put options based on the Black-Scholes model.
 Interactive Dashboard: Explore how different parameters (e.g., asset price, strike price, volatility) affect option pricing.
-Greeks Visualization: Analyze the sensitivities (Delta, Gamma, Theta, Vega, Rho) and their impact on option pricing.
-Heatmaps: Visualize how option prices change over a range of spot prices and volatilities.
+Greeks Visualisation: Analyse the sensitivities (Delta, Gamma, Theta, Vega, Rho) and their impact on option pricing.
+Heatmaps: Visualise how option prices change over a range of spot prices and volatilities.
 Installation
 
 To run this project locally, clone the repository and install the required dependencies:
@@ -33,7 +33,7 @@ Technologies Used
 Python: Core programming language.
 Streamlit: Web framework for creating the interactive dashboard.
 NumPy: Numerical computing library for calculations.
-Matplotlib & Seaborn: Data visualization libraries.
+Matplotlib & Seaborn: Data visualisation libraries.
 Plotly: For creating interactive gauge charts.
 Py_vollib: For calculating option prices and Greeks.
 
@@ -45,4 +45,4 @@ Contributions are welcome! If you have any ideas or improvements, feel free to o
 
 Contact
 
-Created by Michele Palazzo - feel free to reach out!
+Created by Michele Palazzo - feel free to reach out via email michele_palazzo@icloud.com
