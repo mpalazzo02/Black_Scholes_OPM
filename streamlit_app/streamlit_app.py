@@ -11,9 +11,23 @@ from black_scholes_model import calculate_option_price
 from greeks_calculator import calculate_greeks
 from implied_volatility import calculate_implied_volatility
 
-# Set page config
-st.set_page_config(page_title="Black-Scholes Pricing Model", layout="wide", initial_sidebar_state="expanded")
-
+# detailds
+st.markdown(
+    """
+    <div style="text-align: left; margin-bottom: 20px;">
+        <b>Made by Michele Palazzo</b><br>
+        <a href="https://github.com/mpalazzo02" target="_blank">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" style="width:16px;vertical-align:middle;margin-right:5px;">
+            GitHub
+        </a> |
+        <a href="https://www.linkedin.com/in/michele-palazzo-7a2a42323" target="_blank">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" style="width:16px;vertical-align:middle;margin-right:5px;">
+            LinkedIn
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # App Header
 st.markdown(
     """
