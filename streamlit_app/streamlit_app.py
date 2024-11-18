@@ -7,156 +7,97 @@ from greeks_calculator import calculate_greeks
 from implied_volatility import calculate_implied_volatility
 import plotly.graph_objects as go
 
-# App Title
-st.title("Black-Scholes Pricing Model")
-st.write("""
-<style>
-    .reportview-container .main .block-container{
-        max-width: 98%;
-        padding-top: 1em;
-        padding-right: 1rem;
-        padding-left: 1rem;
-        padding-bottom: 1rem;
-    }
-</style>
-""", unsafe_allow_html=True)
-st.write("""
-The **Black-Scholes model** is a mathematical model for pricing an options contract. 
-It estimates the variation over time of financial instruments such as stocks and is 
-widely used to determine the fair price of options.
+from black_scholes_model import calculate_option_price
+from greeks_calculator import calculate_greeks
+from implied_volatility import calculate_implied_volatility
 
-This interactive dashboard allows you to calculate the price of Call and Put options using 
-the Black-Scholes model, visualise option prices over different market conditions, 
-and explore the Greeks, which are sensitivities of the option's price to various factors.
-""")
+# Set page config
+st.set_page_config(page_title="Black-Scholes Pricing Model", layout="wide", initial_sidebar_state="expanded")
 
-# Sidebar with Sections
-st.sidebar.header("Black-Scholes Model")
-st.sidebar.markdown(
+# App Header
+st.markdown(
     """
-    <div style="text-align: center; font-size: 16px;">
-        <b>Created by:</b> <a href='https://www.linkedin.com/in/YOUR-LINKEDIN-URL/' target='_blank' style='color: #0e76a8; text-decoration: none;'>Michele Palazzo</a>
-    </div>
-    """, unsafe_allow_html=True
+    <h1 style="text-align: center; font-size: 3em; margin-bottom: 10px;">Black-Scholes Pricing Model</h1>
+    <p style="text-align: center; font-size: 1.2em; color: #6c757d;">
+        Analyse option prices, visualise sensitivities, and explore Greeks interactively.
+        
+    </p>
+    """,
+    unsafe_allow_html=True,
 )
 
-# Split the Sidebar into Sections
-st.sidebar.markdown("### Call and Put Option Inputs")
+# Create tabs for organized layout
+tabs = st.tabs(["Pricing Inputs", "Option Prices", "Greeks", "Heatmaps"])
 
-# Call and Put Option Inputs
-with st.sidebar.expander("Option Pricing", expanded=True):
-    st.markdown("**Input Parameters for Pricing Call and Put Options**")
-    S = st.sidebar.number_input("Current Asset Price", min_value=0.0, value=100.0, step=1.0)
-    K = st.sidebar.number_input("Strike Price", min_value=0.0, value=100.0, step=1.0)
-    T = st.sidebar.number_input("Time to Maturity (Years)", min_value=0.01, value=1.0, step=0.01)
-    sigma = st.sidebar.number_input("Volatility", min_value=0.01, value=0.2, step=0.01)
-    r = st.sidebar.number_input("Risk-Free Interest Rate", min_value=0.0, value=0.05, step=0.01)
-    option_type = st.sidebar.selectbox("Option Type", ("Call", "Put"))
+# Tab 1: Pricing Inputs
+with tabs[0]:
+    st.subheader("Input Parameters")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        S = st.number_input("Spot Price (S)", value=100.0, step=1.0)
+        T = st.number_input("Time to Maturity (Years, T)", value=1.0, step=0.01)
+    with col2:
+        K = st.number_input("Strike Price (K)", value=100.0, step=1.0)
+        r = st.number_input("Risk-Free Rate (r)", value=0.05, step=0.01)
+    with col3:
+        sigma = st.number_input("Volatility (σ)", value=0.2, step=0.01)
+        option_type = st.selectbox("Option Type", ["Call", "Put"])
 
-# Section for Heatmap Inputs
-st.sidebar.subheader("Heatmap Parameters")
-with st.sidebar.expander("Customize Heatmap", expanded=True):
-    st.markdown("**Input Parameters for Generating the Heatmap**")
-    min_spot = st.sidebar.number_input("Min Spot Price", min_value=0.0, value=80.0)
-    max_spot = st.sidebar.number_input("Max Spot Price", min_value=0.0, value=120.0)
-    min_vol = st.sidebar.number_input("Min Volatility for Heatmap", min_value=0.01, value=0.1)
-    max_vol = st.sidebar.number_input("Max Volatility for Heatmap", min_value=0.01, value=0.4)
+# Tab 2: Option Prices
+with tabs[1]:
+    st.subheader("Option Prices")
+    call_price = calculate_option_price('c', S, K, T, r, sigma)
+    put_price = calculate_option_price('p', S, K, T, r, sigma)
+    st.metric("CALL Price", f"${call_price:.2f}", delta=None, delta_color="normal")
+    st.metric("PUT Price", f"${put_price:.2f}", delta=None, delta_color="inverse")
 
-# Create a section for the Greeks in the sidebar
-st.sidebar.subheader("Option Greeks")
+# Tab 3: Greeks
+with tabs[2]:
+    st.subheader("Option Greeks")
+    greeks = calculate_greeks(option_type[0].lower(), S, K, T, r, sigma)
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("Delta", f"{greeks['Delta']:.4f}")
+    col2.metric("Gamma", f"{greeks['Gamma']:.4f}")
+    col3.metric("Theta", f"{greeks['Theta']:.4f}")
+    col4.metric("Vega", f"{greeks['Vega']:.4f}")
+    col5.metric("Rho", f"{greeks['Rho']:.4f}")
 
-# Create a function to generate a gauge chart
-def create_gauge(name, value, min_value=-1, max_value=1):
-    return go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=value,
-        title={'text': name, 'font': {'size': 14}},  # Smaller title font
-        gauge={'axis': {'range': [min_value, max_value]},
-               'bar': {'color': "#1f77b4"}},  # Use a consistent color scheme
-        number={'font': {'size': 20}}  # Smaller number font
-    ))
+with tabs[3]:
+    st.subheader("Option Pricing Heatmaps")
 
-# Calculate Option Prices and Greeks
-call_price = calculate_option_price('c', S, K, T, r, sigma)
-put_price = calculate_option_price('p', S, K, T, r, sigma)
-greeks = calculate_greeks(option_type[0].lower(), S, K, T, r, sigma)
-iv = calculate_implied_volatility(call_price if option_type == 'Call' else put_price, S, K, T, r, option_type[0].lower())
+    # Input for Spot Prices and Volatilities
+    min_spot = st.number_input("Minimum Spot Price", value=80.0, step=1.0)
+    max_spot = st.number_input("Maximum Spot Price", value=120.0, step=1.0)
+    min_vol = st.number_input("Minimum Volatility", value=0.1, step=0.01)
+    max_vol = st.number_input("Maximum Volatility", value=0.4, step=0.01)
 
-# Create gauge charts for all the Greeks
-delta_gauge = create_gauge("Delta", greeks['Delta'], -1, 1)
-gamma_gauge = create_gauge("Gamma", greeks['Gamma'], 0, 0.5)
-theta_gauge = create_gauge("Theta", greeks['Theta'], -0.5, 0)
-vega_gauge = create_gauge("Vega", greeks['Vega'], 0, 0.5)
-rho_gauge = create_gauge("Rho", greeks['Rho'], -0.5, 0.5)
+    # Generate Spot Prices and Volatility Arrays
+    spot_prices = np.linspace(min_spot, max_spot, 10)
+    volatilities = np.linspace(min_vol, max_vol, 10)
+    call_prices = np.zeros((10, 10))
+    put_prices = np.zeros((10, 10))
 
-# Update layout to make the gauges smaller and reduce margins
-for gauge in [delta_gauge, gamma_gauge, theta_gauge, vega_gauge, rho_gauge]:
-    gauge.update_layout(
-        width=250,  # Adjust the width of the gauge
-        height=250,  # Adjust the height of the gauge
-        margin=dict(l=0, r=0, t=20, b=0)  # Reduce the margins
-    )
+    # Calculate Option Prices for Heatmap
+    for i, S in enumerate(spot_prices):
+        for j, sigma in enumerate(volatilities):
+            call_prices[j, i] = calculate_option_price('c', S, K, T, r, sigma)
+            put_prices[j, i] = calculate_option_price('p', S, K, T, r, sigma)
 
-# Display the gauges in the sidebar
-st.sidebar.plotly_chart(delta_gauge, use_container_width=True)
-st.sidebar.plotly_chart(gamma_gauge, use_container_width=True)
-st.sidebar.plotly_chart(theta_gauge, use_container_width=True)
-st.sidebar.plotly_chart(vega_gauge, use_container_width=True)
-st.sidebar.plotly_chart(rho_gauge, use_container_width=True)
+    # Plot Heatmaps with Adjusted Layout and Font Sizes
+    fig, ax = plt.subplots(1, 2, figsize=(18, 8))  # Adjust the figure size
 
-# Main Content Area
-st.header("Options Price - Interactive Dashboard")
-st.markdown("---")  # Horizontal rule for better sectioning
+    sns.heatmap(call_prices, ax=ax[0], xticklabels=np.round(spot_prices, 2), yticklabels=np.round(volatilities, 2),
+                cmap="YlGnBu", annot=True, fmt=".2f", cbar_kws={'label': 'CALL Price'}, annot_kws={"size": 10})
+    ax[0].set_xlabel('Spot Price', fontsize=14)
+    ax[0].set_ylabel('Volatility', fontsize=14)
+    ax[0].set_title('Call Price Heatmap', fontsize=16)
 
-# Display Option Price with Colored Boxes
-col1, col2 = st.columns(2)
+    sns.heatmap(put_prices, ax=ax[1], xticklabels=np.round(spot_prices, 2), yticklabels=np.round(volatilities, 2),
+                cmap="YlOrRd", annot=True, fmt=".2f", cbar_kws={'label': 'PUT Price'}, annot_kws={"size": 10})
+    ax[1].set_xlabel('Spot Price', fontsize=14)
+    ax[1].set_ylabel('Volatility', fontsize=14)
+    ax[1].set_title('Put Price Heatmap', fontsize=16)
 
-col1.markdown(
-    f"""
-    <div style="background-color:#28a745;padding:20px;border-radius:10px;text-align:center;color:white;font-weight:bold;">
-        CALL Value
-        <p style="font-size:24px;margin:0;">${call_price:.2f}</p>
-    </div>
-    """, unsafe_allow_html=True
-)
-
-col2.markdown(
-    f"""
-    <div style="background-color:#dc3545;padding:20px;border-radius:10px;text-align:center;color:white;font-weight:bold;">
-        PUT Value
-        <p style="font-size:24px;margin:0;">${put_price:.2f}</p>
-    </div>
-    """, unsafe_allow_html=True
-)
-
-# Generate Spot Prices and Volatility Arrays
-spot_prices = np.linspace(min_spot, max_spot, 10)
-volatilities = np.linspace(min_vol, max_vol, 10)
-call_prices = np.zeros((10, 10))
-put_prices = np.zeros((10, 10))
-
-# Calculate Option Prices for Heatmap
-for i, S in enumerate(spot_prices):
-    for j, sigma in enumerate(volatilities):
-        call_prices[j, i] = calculate_option_price('c', S, K, T, r, sigma)
-        put_prices[j, i] = calculate_option_price('p', S, K, T, r, sigma)
-
-# Plot Heatmaps with Adjusted Layout and Font Sizes
-st.subheader("Option Pricing Heatmaps")
-fig, ax = plt.subplots(1, 2, figsize=(18, 8))  # Adjust the figure size
-
-sns.heatmap(call_prices, ax=ax[0], xticklabels=np.round(spot_prices, 2), yticklabels=np.round(volatilities, 2),
-            cmap="YlGnBu", annot=True, fmt=".2f", cbar_kws={'label': 'CALL Price'}, annot_kws={"size": 10})
-ax[0].set_xlabel('Spot Price', fontsize=14)
-ax[0].set_ylabel('Volatility', fontsize=14)
-ax[0].set_title('Call Price Heatmap', fontsize=16)
-
-sns.heatmap(put_prices, ax=ax[1], xticklabels=np.round(spot_prices, 2), yticklabels=np.round(volatilities, 2),
-            cmap="YlOrRd", annot=True, fmt=".2f", cbar_kws={'label': 'PUT Price'}, annot_kws={"size": 10})
-ax[1].set_xlabel('Spot Price', fontsize=14)
-ax[1].set_ylabel('Volatility', fontsize=14)
-ax[1].set_title('Put Price Heatmap', fontsize=16)
-
-fig.tight_layout(pad=2.0)  # Adjust layout padding to improve spacing
-st.pyplot(fig)
-plt.close(fig)
+    fig.tight_layout(pad=2.0)  # Adjust layout padding to improve spacing
+    st.pyplot(fig)
+    plt.close(fig)
